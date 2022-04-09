@@ -43,9 +43,9 @@ def get_exact_point(driver):
 def get_point(logger, driver, channel_info: dict):
     try:
         url = driver.current_url
-        if 'www.twitch.tv' in url:
+        if 'twitch.tv' in url:
             buttons = driver.find_elements_by_css_selector('[aria-label="보너스 받기"]')
-            if len(buttons) > 0:
+            if len(buttons) == 0:
                 return
             channel_name = channel_info.get('name')
 
