@@ -1,18 +1,17 @@
-import time
+import os
 from threading import Event
 
-
-from selenium.webdriver import Chrome, ChromeOptions
 from selenium.common.exceptions import InvalidArgumentException
+from selenium.webdriver import Chrome, ChromeOptions
 
 from config import user_path
 from scripts.seleniumdriver import chromedriver_path, update_chrome
 from scripts.simple_logger import simple_logger
-from scripts.twtich import get_point, get_channel_name
-
+from scripts.twtich import change_to_twitch_window, get_channel_name, get_point
 
 logger = simple_logger()
 update_chrome()
+os.makedirs(user_path, exist_ok=True)
 
 
 def main():
@@ -23,12 +22,10 @@ def main():
     try:
         driver = Chrome(executable_path=chromedriver_path, options=options)
         driver.get('https://www.twitch.tv')
-
         event = Event()
         channel_info = {'name': ''}
-
-        time.sleep(10)
         while True:
+            change_to_twitch_window(driver, channel_info)
             get_channel_name(logger, driver, channel_info)
             get_point(logger, driver, channel_info)
             event.wait(5)

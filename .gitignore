@@ -131,3 +131,6 @@ dmypy.json
 # executable
 *.exe
 *.lnk
+
+# userpath
+usr
