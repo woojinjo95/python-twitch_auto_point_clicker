@@ -1,7 +1,9 @@
 import os
+import traceback
 from threading import Event
 
-from selenium.common.exceptions import InvalidArgumentException
+from selenium.common.exceptions import (InvalidArgumentException,
+                                        WebDriverException)
 from selenium.webdriver import Chrome, ChromeOptions
 
 from config import user_path
@@ -34,8 +36,14 @@ def main():
         logger.error(f'{user_path} is used by other chrome')
 
     finally:
-        if driver:
+        try:
             driver.close()
+        except WebDriverException:
+            # already closed
+            pass
+        except Exception as e:
+            logger.error(e)
+            logger.debug(traceback.format_exc())
 
 
 if __name__ == '__main__':

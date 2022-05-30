@@ -1,9 +1,11 @@
 import logging
 import re
+import sys
 import time
 import traceback
 from urllib.parse import unquote
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import ActionChains
 
 logger = logging.getLogger('main')
@@ -33,7 +35,9 @@ def get_exact_point(driver):
                 point = int(text_with_only_point.replace(',', ''))
 
         return point
-
+    except WebDriverException:
+        logger.warn('Chrome closed.')
+        sys.exit()
     except Exception as e:
         logger.error(e)
         logger.debug(traceback.format_exc())
@@ -56,6 +60,9 @@ def get_point(logger, driver, channel_info: dict):
                 logger.info(f'{channel_name}: get point, {point_prev}=>{point}')
                 time.sleep(1)
 
+    except WebDriverException:
+        logger.warn('Chrome closed.')
+        sys.exit()
     except Exception as e:
         logger.error(e)
         logger.debug(traceback.format_exc())
@@ -79,6 +86,9 @@ def get_channel_name(logger, driver, channel_info):
             else:
                 # same channel
                 pass
+    except WebDriverException:
+        logger.warn('Chrome closed.')
+        sys.exit()
     except Exception as e:
         logger.error(e)
         logger.debug(traceback.format_exc())
@@ -86,18 +96,26 @@ def get_channel_name(logger, driver, channel_info):
 
 
 def change_to_twitch_window(driver, channel_info):
-    channel_url = driver.current_url
-    if 'twitch' not in channel_url and channel_url != channel_info['channel_url']:
-        logger.info('Current page is not twitch!')
-        for window_handle in driver.window_handles:
-            driver.switch_to.window(window_handle)
-            if 'twitch' in driver.current_url:
-                logger.info('Find twitch')
-                break
+    try:
+        channel_url = driver.current_url
+        if 'twitch' not in channel_url and channel_url != channel_info['channel_url']:
+            logger.info('Current page is not twitch!')
+            for window_handle in driver.window_handles:
+                driver.switch_to.window(window_handle)
+                if 'twitch' in driver.current_url:
+                    logger.info('Find twitch')
+                    break
+            else:
+                driver.switch_to.window(driver.window_handles[0])
+                logger.info('Failed to find twitch.')
         else:
-            driver.switch_to.window(driver.window_handles[0])
-            logger.info('Failed to find twitch.')
-    else:
-        pass
+            pass
 
-    channel_info['channel_url'] = channel_url
+        channel_info['channel_url'] = channel_url
+
+    except WebDriverException:
+        logger.warn('Chrome closed.')
+        sys.exit()
+    except Exception as e:
+        logger.error(e)
+        logger.debug(traceback.format_exc())
